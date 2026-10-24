@@ -20,12 +20,16 @@ on:
         type: string
 
   schedule:
-    - cron: '14 8,12,16,20,0 * * *'
+    - cron: '14 0 * * *'
+    - cron: '14 8 * * *'
+    - cron: '14 12 * * *'
+    - cron: '14 16 * * *'
+    - cron: '14 20 * * *'
 
 jobs:
   run-pipeline:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
 
     steps:
       - name: Checkout Code
@@ -38,9 +42,13 @@ jobs:
           cache: 'pip'
 
       - name: Install System Dependencies
+        timeout-minutes: 5
         run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg fonts-liberation fonts-dejavu-core
+          if ! command -v ffmpeg &> /dev/null; then
+            sudo apt-get update -o Acquire::Retries=3 -o Acquire::http::Timeout="15" || true
+            sudo apt-get install -y --no-install-recommends ffmpeg || true
+          fi
+          sudo apt-get install -y --no-install-recommends fonts-liberation fonts-dejavu-core || true
 
       - name: Install Dependencies
         run: |
@@ -64,6 +72,20 @@ jobs:
             if [ "${{ github.event.inputs.publish }}" = "true" ]; then
               CMD="$CMD --publish"
             fi
+          elif [ "${{ github.event_name }}" = "schedule" ]; then
+            CRON_HOUR=$(echo "${{ github.event.schedule }}" | awk '{print $2}')
+            case "$CRON_HOUR" in
+              "8")  SLOT=1 ;;
+              "12") SLOT=2 ;;
+              "16") SLOT=3 ;;
+              "20") SLOT=4 ;;
+              "0")  SLOT=5 ;;
+              *)    SLOT="" ;;
+            esac
+            if [ -n "$SLOT" ]; then
+              CMD="$CMD --slot $SLOT"
+            fi
+            CMD="$CMD --publish"
           else
             CMD="$CMD --publish"
           fi
