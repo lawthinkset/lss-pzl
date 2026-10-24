@@ -35,10 +35,20 @@ ORDERED_MODES = [
     "pemdas_math",
     "rebus_puzzle",
     "word_guess",
+    "tangled_wires",
     "matchstick_puzzle",
     "shape_counter",
     "shadow_glitch",
-    "pause_silhouette"
+    "pause_silhouette",
+    "color_shade_clash",
+    "balance_scale",
+    "pyramid_math",
+    "missing_domino",
+    "pattern_matrix",
+    "gear_rotation",
+    "water_tank",
+    "clock_angle",
+    "triangle_trap"
 ]
 
 def determine_slot(explicit_slot: int = None) -> int:
